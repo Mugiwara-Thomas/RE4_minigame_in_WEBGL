@@ -1,0 +1,8 @@
+Model Information:
+* title:	Victorian Style Table/Desk
+* source:	https://sketchfab.com/3d-models/victorian-style-tabledesk-c364d9c007c44ad6ada3f90706bcdc77
+* author:	FordVFX (https://sketchfab.com/FordVFX)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
