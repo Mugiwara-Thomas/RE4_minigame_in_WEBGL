@@ -1,4 +1,5 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js";
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 class InputController {
 
@@ -102,7 +103,7 @@ class InputController {
 }
 
 class FirstPersonCamera {
-    constructor(camera) {
+    constructor(camera, object) {
         this._camera = camera;
         this._input = new InputController();
         this._rotation = new THREE.Quaternion();
@@ -112,6 +113,7 @@ class FirstPersonCamera {
 
         this._movementSpeed = 20;
         this._altura = 5;
+        this._object = object;
     }
 
     update(timeElapsedS) {
@@ -127,12 +129,18 @@ class FirstPersonCamera {
 
     _UpdatePosition(timeElapsedS) {
         const moveSpeed = this._movementSpeed * timeElapsedS;
+        const offsetDistance = 3; 
 
         if (this._input.keyPressed["w"]) {
             console.log('Moving forward');
             const forward = new THREE.Vector3(0, 0, -1);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
-            this._camera.position.add(forward);            
+            this._camera.position.add(forward);
+
+            const offset = new THREE.Vector3(0, 0, -1); 
+            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
+
+            this._object.position.copy(this._camera.position).add(offset);
         }
 
         if (this._input.keyPressed["s"]) {
@@ -140,6 +148,11 @@ class FirstPersonCamera {
             const forward = new THREE.Vector3(0, 0, 1);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
+
+            const offset = new THREE.Vector3(0, 0, -1); 
+            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
+
+            this._object.position.copy(this._camera.position).add(offset);
         }
 
         if (this._input.keyPressed["a"]) {
@@ -147,17 +160,29 @@ class FirstPersonCamera {
             const forward = new THREE.Vector3(-1, 0, 0);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
-        }
 
+            const offset = new THREE.Vector3(0, 0, -1); 
+            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
+
+            this._object.position.copy(this._camera.position).add(offset);
+        }
         if (this._input.keyPressed["d"]) {
             console.log('Moving Left');
             const forward = new THREE.Vector3(1, 0, 0);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
+
+            const offset = new THREE.Vector3(0, 0, -1); 
+            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
+
+            this._object.position.copy(this._camera.position).add(offset);
         }
 
         this._camera.position.y = Math.max(this._camera.position.y, this._altura);
         this._camera.position.y = Math.min(this._camera.position.y, this._altura);
+
+        this._object.position.y = Math.max(this._camera.position.y, this._altura - 1);
+        this._object.position.y = Math.min(this._camera.position.y, this._altura - 1);
     }
 
     clamp(value, min, max) {
@@ -185,6 +210,8 @@ class FirstPersonCamera {
         q.multiply(qz);
 
         this._rotation.copy(q);
+
+        this._object.quaternion.copy(this._rotation);
     }
 }
 
@@ -220,11 +247,25 @@ class World {
         this._scene = new THREE.Scene();
 
         this._addLights();
-        this._addGrid();
 
-        this.controls = new FirstPersonCamera(this._camera);
+        let loader = new GLTFLoader();
+        this._object;
 
-        this._RAF();
+        loader.load('../assets/fps-shotgun-gltf/scene.gltf', (gltf) => {
+            this._object = gltf.scene;
+            this._object.scale.set(3, 3, 3);
+            this._scene.add(this._object);
+
+            // Initialize controls after loading the object
+            this.controls = new FirstPersonCamera(this._camera, this._object);
+
+            // Call the update method here or wherever appropriate
+            // this.controls.update(0);
+
+            this._addGrid();
+
+            this._RAF();
+        });
     }
 
     _addGrid() {
