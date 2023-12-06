@@ -225,6 +225,7 @@ class World {
         this._threejs.shadowMap.type = THREE.PCFSoftShadowMap;
         this._threejs.setPixelRatio(window.devicePixelRatio);
         this._threejs.setSize(window.innerWidth, window.innerHeight);
+        document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
 
         document.body.appendChild(this._threejs.domElement);
 
@@ -251,21 +252,85 @@ class World {
         let loader = new GLTFLoader();
         this._object;
 
+
         loader.load('../assets/fps-shotgun-gltf/scene.gltf', (gltf) => {
             this._object = gltf.scene;
             this._object.scale.set(3, 3, 3);
             this._scene.add(this._object);
 
-            // Initialize controls after loading the object
             this.controls = new FirstPersonCamera(this._camera, this._object);
 
-            // Call the update method here or wherever appropriate
-            // this.controls.update(0);
+            this._addBackground();
 
-            this._addGrid();
+            this._addFloor();
+
+            this._addCube(); 
 
             this._RAF();
         });
+    }
+
+    _OnMouseDown(e) {
+        if (e.button === 0) {
+            this._createCubeAtMousePosition();
+        }
+    }
+
+    _createCubeAtMousePosition() {
+        const cubeGeometry = new THREE.BoxGeometry(5, 5, 5);
+        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.copy(this._camera.position);
+    
+        const cameraDirection = new THREE.Vector3(0, 0, -1);
+        cameraDirection.applyQuaternion(this._camera.quaternion).normalize();
+    
+        const moveSpeed = 50;
+    
+        const cubeLifetime = 2000;
+    
+        this._scene.add(cube);
+    
+        const updateCubePosition = (startTime) => {
+            const moveVector = cameraDirection.clone().multiplyScalar(moveSpeed);
+    
+            cube.position.add(moveVector);
+    
+            this._threejs.render(this._scene, this._camera);
+    
+            const currentTime = new Date().getTime();
+            if (currentTime - startTime > cubeLifetime) {
+                // Se o tempo de vida for excedido, remova o cubo da cena
+                this._scene.remove(cube);
+            } else {
+                // Caso contrário, agende a próxima atualização
+                requestAnimationFrame(() => updateCubePosition(startTime));
+            }
+        };
+    
+        // Inicie a atualização contínua da posição do cubo
+        const startTime = new Date().getTime();
+        updateCubePosition(startTime);
+    }
+    
+    _addCube() {
+        const cubeGeometry = new THREE.BoxGeometry(10, 10, 10);
+        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    
+        cube.position.set(0, 10, -20);
+    
+        this._scene.add(cube);
+    }
+
+    _addFloor() {
+        const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
+        const textureLoader = new THREE.TextureLoader();
+        const texture = textureLoader.load('../assets/grass.jpg'); // Substitua com o caminho real da sua textura
+        const material = new THREE.MeshStandardMaterial({ map: texture });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(0, -500, 0);
+        this._scene.add(cube);
     }
 
     _addGrid() {
@@ -276,15 +341,16 @@ class World {
         const axesHelper = new THREE.AxesHelper(15);
         this._scene.add(axesHelper);
     }
+    
     _addBackground() {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
-            "../assets/posx.jpg",
-            "../assets/negx.jpg",
-            "../assets/posy.jpg",
-            "../assets/negy.jpg",
-            "../assets/posz.jpg",
-            "../assets/negz.jpg",
+            "../assets/wood.bmp",
+            "../assets/wood.bmp",
+            "../assets/wood.bmp",
+            "../assets/wood.bmp",
+            "../assets/wood.bmp",
+            "../assets/wood.bmp",
         ]);
         this._scene.background = texture;
     }

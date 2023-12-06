@@ -9,5 +9,5 @@ body {
 }
 
 *:hover {
-  cursor: url('../assets/mira.png'), crosshair;
+  cursor: none;
  }
