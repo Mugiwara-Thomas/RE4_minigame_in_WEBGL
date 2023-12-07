@@ -2,9 +2,11 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 class InputController {
-    constructor() {
+
+    constructor(keyMapping) {
         this._Initialize();
-        this.keyPressed = {};
+        this.keyPressed = {}
+
     }
 
     _handleKeyDown = (e) => {
@@ -31,6 +33,7 @@ class InputController {
         this.previous = null;
         this.previousKeys = {};
 
+
         document.addEventListener(
             "mousedown",
             (e) => this._OnMouseDown(e),
@@ -46,13 +49,11 @@ class InputController {
         document.addEventListener("keyup", this._handleKeyUp, false);
     }
 
+
     _OnMouseDown(e) {
         switch (e.button) {
             case 0: {
                 this.current.leftButton = true;
-                if (this.current.leftButton) {
-                    this.spawnObject();
-                }
                 break;
             }
             case 1: {
@@ -75,6 +76,7 @@ class InputController {
         }
     }
 
+
     _OnMouseMove(e) {
         this.current.mouseX = e.pageX - window.innerWidth / 2;
         this.current.mouseY = e.pageY - window.innerHeight / 2;
@@ -86,57 +88,6 @@ class InputController {
         this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
         this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
     }
-
-    spawnObject() {
-        if (_APP) {
-            const loader = new GLTFLoader();
-            loader.load('../assets/9mm_bullet/scene.gltf', (gltf) => {
-                const spawnedObject = gltf.scene;
-                spawnedObject.scale.set(0.2, 0.2, 0.2);
-                // Set the position of the spawned object in front of the weapon and a little to the right
-                const offsetDistance = 5; // Adjust this value as needed
-                const offsetY = -2; // Adjust this value to move the object more down
-                const offsetX = 1; // Adjust this value to move the object more to the right
-                const offset = new THREE.Vector3(offsetX, offsetY, -offsetDistance);
-                offset.applyQuaternion(_APP._camera.quaternion).normalize().multiplyScalar(offsetDistance);
-           
-                const spawnPosition = new THREE.Vector3().copy(_APP._camera.position).add(offset);
-                spawnedObject.position.copy(spawnPosition);
-    
-                // Set the rotation of the spawned object to match the camera's rotation
-                spawnedObject.rotation.copy(_APP._camera.rotation);
-    
-                _APP._scene.add(spawnedObject);
-    
-                // Animation loop for moving the object forward
-                const moveSpeed = 10; // Adjust this value as needed
-                const animationStartTime = performance.now();
-    
-                function animate() {
-                    const currentTime = performance.now();
-                    const elapsedSeconds = (currentTime - animationStartTime) / 1000;
-    
-                    // Move the object forward
-                    const forward = new THREE.Vector3(0, 0, -1);
-                    forward.applyQuaternion(spawnedObject.quaternion).normalize().multiplyScalar(moveSpeed * elapsedSeconds);
-                    spawnedObject.position.add(forward);
-    
-                    // Continue the animation loop until the object reaches its destination
-                    if (elapsedSeconds < 5) { // Continue animation for 5 seconds
-                        requestAnimationFrame(animate);
-                    } else {
-                        // Remove the object after 5 seconds
-                        _APP._scene.remove(spawnedObject);
-                    }
-                }
-    
-                // Start the animation loop
-                animate();
-            });
-        }
-    }
-    
-    
 
     update() {
         if (this.previous !== null) {
@@ -300,86 +251,21 @@ class World {
         let loader = new GLTFLoader();
         this._object;
 
-
         loader.load('../assets/fps-shotgun-gltf/scene.gltf', (gltf) => {
             this._object = gltf.scene;
             this._object.scale.set(3, 3, 3);
             this._scene.add(this._object);
 
+            // Initialize controls after loading the object
             this.controls = new FirstPersonCamera(this._camera, this._object);
 
-            // this._addBackground();
+            // Call the update method here or wherever appropriate
+            // this.controls.update(0);
 
-            // this._addFloor();
+            this._addGrid();
 
-            // this._addCube(); 
-
-            this._addGrid()
             this._RAF();
         });
-    }
-
-    _OnMouseDown(e) {
-        if (e.button === 0) {
-            this._createCubeAtMousePosition();
-        }
-    }
-
-    _createCubeAtMousePosition() {
-        const cubeGeometry = new THREE.BoxGeometry(5, 5, 5);
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-        cube.position.copy(this._camera.position);
-    
-        const cameraDirection = new THREE.Vector3(0, 0, -1);
-        cameraDirection.applyQuaternion(this._camera.quaternion).normalize();
-    
-        const moveSpeed = 50;
-    
-        const cubeLifetime = 2000;
-    
-        this._scene.add(cube);
-    
-        const updateCubePosition = (startTime) => {
-            const moveVector = cameraDirection.clone().multiplyScalar(moveSpeed);
-    
-            cube.position.add(moveVector);
-    
-            this._threejs.render(this._scene, this._camera);
-    
-            const currentTime = new Date().getTime();
-            if (currentTime - startTime > cubeLifetime) {
-                // Se o tempo de vida for excedido, remova o cubo da cena
-                this._scene.remove(cube);
-            } else {
-                // Caso contrário, agende a próxima atualização
-                requestAnimationFrame(() => updateCubePosition(startTime));
-            }
-        };
-    
-        // Inicie a atualização contínua da posição do cubo
-        const startTime = new Date().getTime();
-        updateCubePosition(startTime);
-    }
-    
-    _addCube() {
-        const cubeGeometry = new THREE.BoxGeometry(10, 10, 10);
-        const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-    
-        cube.position.set(0, 10, -20);
-    
-        this._scene.add(cube);
-    }
-
-    _addFloor() {
-        const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
-        const textureLoader = new THREE.TextureLoader();
-        const texture = textureLoader.load('../assets/grass.jpg'); // Substitua com o caminho real da sua textura
-        const material = new THREE.MeshStandardMaterial({ map: texture });
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(0, -500, 0);
-        this._scene.add(cube);
     }
 
     _addGrid() {
@@ -390,16 +276,15 @@ class World {
         const axesHelper = new THREE.AxesHelper(15);
         this._scene.add(axesHelper);
     }
-    
     _addBackground() {
         const loader = new THREE.CubeTextureLoader();
         const texture = loader.load([
-            "../assets/wood.bmp",
-            "../assets/wood.bmp",
-            "../assets/wood.bmp",
-            "../assets/wood.bmp",
-            "../assets/wood.bmp",
-            "../assets/wood.bmp",
+            "../assets/posx.jpg",
+            "../assets/negx.jpg",
+            "../assets/posy.jpg",
+            "../assets/negy.jpg",
+            "../assets/posz.jpg",
+            "../assets/negz.jpg",
         ]);
         this._scene.background = texture;
     }
