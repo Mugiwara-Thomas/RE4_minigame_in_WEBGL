@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 class InputController {
@@ -167,7 +168,7 @@ class FirstPersonCamera {
         this._theta = 0;
 
         this._movementSpeed = 20;
-        this._altura = 5;
+        this._altura = 12;
         this._object = object;
     }
 
@@ -308,8 +309,18 @@ class World {
         this._addLights();
 
         let loader = new GLTFLoader();
-        this._object;
+        this._cenario;
         
+        loader.load('../assets/cenario.glb', (gltf) => {
+            this._cenario = gltf.scene;
+            this._cenario.scale.set(10, 10, 10);
+            this._scene.add(this._cenario);
+
+        })
+
+        
+
+        this._object;
 
         loader.load('../assets/fps-shotgun-gltf/scene.gltf', (gltf) => {
             this._object = gltf.scene;
@@ -325,7 +336,13 @@ class World {
 
             this._RAF();
         });
+
+        
     }
+
+
+// Assuming that the OBJLoader has been imported correctly
+
 
     _addCrosshair() {
         const loader = new THREE.TextureLoader();
