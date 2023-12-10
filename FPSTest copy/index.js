@@ -49,6 +49,11 @@ class InputController {
     _OnMouseDown(e) {
         switch (e.button) {
             case 0: {
+                if (!document.pointerLockElement) {
+                    document.body.requestPointerLock();
+                    return;
+                }
+
                 this.current.leftButton = true;
                 if (this.current.leftButton) {
                     this.spawnObject();
@@ -76,8 +81,8 @@ class InputController {
     }
 
     _OnMouseMove(e) {
-        this.current.mouseX = e.pageX - window.innerWidth / 2;
-        this.current.mouseY = e.pageY - window.innerHeight / 2;
+        this.current.mouseX += e.movementX;
+        this.current.mouseY += e.movementY;
 
         if (this.previous === null) {
             this.previous = { ...this.current };
@@ -85,6 +90,9 @@ class InputController {
 
         this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
         this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
+
+        //this.current.mouseXDelta = e.movementX;
+        //this.current.mouseYDelta = e.movementY;
     }
 
     spawnObject() {
@@ -140,10 +148,8 @@ class InputController {
 
     update() {
         if (this.previous !== null) {
-            this.current.mouseXDelta =
-                this.current.mouseX - this.previous.mouseX;
-            this.current.mouseYDelta =
-                this.current.mouseY - this.previous.mouseY;
+            this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
+            this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
 
             this.previous = { ...this.current };
             this.previousKeys = { ...this.keys };
@@ -276,6 +282,7 @@ class World {
         this._threejs.setPixelRatio(window.devicePixelRatio);
         this._threejs.setSize(window.innerWidth, window.innerHeight);
 
+
         document.body.appendChild(this._threejs.domElement);
 
         window.addEventListener(
@@ -293,29 +300,40 @@ class World {
 
         this._camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         this._camera.position.set(75, 20, 0);
-
         this._scene = new THREE.Scene();
+
+        this._uiCamera = new THREE.OrthographicCamera(-1, 1, -1*aspect, 1, 1000)
+        this._uiScene = new THREE.Scene();
 
         this._addLights();
 
         let loader = new GLTFLoader();
         this._object;
+        
 
         loader.load('../assets/fps-shotgun-gltf/scene.gltf', (gltf) => {
             this._object = gltf.scene;
             this._object.scale.set(3, 3, 3);
             this._scene.add(this._object);
 
+            this._addCrosshair
+
             // Initialize controls after loading the object
             this.controls = new FirstPersonCamera(this._camera, this._object);
-
-            // Call the update method here or wherever appropriate
-            // this.controls.update(0);
 
             this._addGrid();
 
             this._RAF();
         });
+    }
+
+    _addCrosshair() {
+        const loader = new THREE.TextureLoader();
+        const crosshair = loader.load('../assets/mira.png');
+        this._crosshairSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: crosshair, color: 0xffffff, fog: false, depthTest: false, depthWrite: false}));
+        //this._crosshairSprite.scale.set(0.15, 0.15 * this._camera.aspect, 1)
+        this._crosshairSprite.position.set(0, 0, -10);
+        this._uiScene.add(this._crosshairSprite);
     }
 
     _addGrid() {
@@ -364,6 +382,11 @@ class World {
     _OnWindowResize() {
         this._camera.aspect = window.innerWidth / window.innerHeight;
         this._camera.updateProjectionMatrix();
+
+        this._uiCamera_.left = -this._camera.aspect;
+        this._uiCamera_.right = this._camera.aspect;
+        this._uiCamera_.updateProjectionMatrix();
+
         this._threejs.setSize(window.innerWidth, window.innerHeight);
     }
 
@@ -374,7 +397,10 @@ class World {
             }
 
             this._Step(t - this._previousRAF);
+            this._threejs.autoClear = true;
             this._threejs.render(this._scene, this._camera);
+            this._threejs.autoClear = false;
+            this._threejs.render(this._uiScene, this._uiCamera);
             this._previousRAF = t;
             this._RAF();
         });
