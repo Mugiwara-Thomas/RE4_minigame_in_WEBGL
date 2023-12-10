@@ -170,6 +170,18 @@ class FirstPersonCamera {
         this._UpdateRotation(timeElapsedS);
         this._UpdateCamera(timeElapsedS);
         this._UpdatePosition(timeElapsedS)
+        this._UpdateGun(timeElapsedS)
+    }
+
+    _UpdateGun(_) {
+        const offsetDistance = 3; 
+
+        const offset = new THREE.Vector3(0, -0.3, -1); 
+        offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
+
+        this._object.position.copy(this._camera.position).add(offset);
+
+        this._object.quaternion.copy(this._rotation);
     }
 
     _UpdateCamera(_) {
@@ -178,18 +190,12 @@ class FirstPersonCamera {
 
     _UpdatePosition(timeElapsedS) {
         const moveSpeed = this._movementSpeed * timeElapsedS;
-        const offsetDistance = 3; 
 
         if (this._input.keyPressed["w"]) {
             console.log('Moving forward');
             const forward = new THREE.Vector3(0, 0, -1);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
-
-            const offset = new THREE.Vector3(0, 0, -1); 
-            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
-
-            this._object.position.copy(this._camera.position).add(offset);
         }
 
         if (this._input.keyPressed["s"]) {
@@ -197,11 +203,6 @@ class FirstPersonCamera {
             const forward = new THREE.Vector3(0, 0, 1);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
-
-            const offset = new THREE.Vector3(0, 0, -1); 
-            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
-
-            this._object.position.copy(this._camera.position).add(offset);
         }
 
         if (this._input.keyPressed["a"]) {
@@ -209,22 +210,12 @@ class FirstPersonCamera {
             const forward = new THREE.Vector3(-1, 0, 0);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
-
-            const offset = new THREE.Vector3(0, 0, -1); 
-            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
-
-            this._object.position.copy(this._camera.position).add(offset);
         }
         if (this._input.keyPressed["d"]) {
             console.log('Moving Left');
             const forward = new THREE.Vector3(1, 0, 0);
             forward.applyQuaternion(this._rotation).normalize().multiplyScalar(moveSpeed);
             this._camera.position.add(forward);
-
-            const offset = new THREE.Vector3(0, 0, -1); 
-            offset.applyQuaternion(this._rotation).normalize().multiplyScalar(offsetDistance);
-
-            this._object.position.copy(this._camera.position).add(offset);
         }
 
         this._camera.position.y = Math.max(this._camera.position.y, this._altura);
@@ -271,8 +262,6 @@ class FirstPersonCamera {
         q.multiply(qz);
 
         this._rotation.copy(q);
-
-        this._object.quaternion.copy(this._rotation);
     }
 }
 
