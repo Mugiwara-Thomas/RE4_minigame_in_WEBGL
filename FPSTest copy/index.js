@@ -302,7 +302,7 @@ class World {
         this._camera.position.set(75, 20, 0);
         this._scene = new THREE.Scene();
 
-        this._uiCamera = new THREE.OrthographicCamera(-1, 1, -1*aspect, 1, 1000)
+        this._uiCamera = new THREE.OrthographicCamera(-1, 1, 1*aspect, -1*aspect, 1, 1000);
         this._uiScene = new THREE.Scene();
 
         this._addLights();
@@ -316,7 +316,7 @@ class World {
             this._object.scale.set(3, 3, 3);
             this._scene.add(this._object);
 
-            this._addCrosshair
+            this._addCrosshair();
 
             // Initialize controls after loading the object
             this.controls = new FirstPersonCamera(this._camera, this._object);
@@ -331,7 +331,7 @@ class World {
         const loader = new THREE.TextureLoader();
         const crosshair = loader.load('../assets/mira.png');
         this._crosshairSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: crosshair, color: 0xffffff, fog: false, depthTest: false, depthWrite: false}));
-        //this._crosshairSprite.scale.set(0.15, 0.15 * this._camera.aspect, 1)
+        this._crosshairSprite.scale.set(0.10, 0.10 * this._camera.aspect, 1);
         this._crosshairSprite.position.set(0, 0, -10);
         this._uiScene.add(this._crosshairSprite);
     }
