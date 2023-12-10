@@ -98,10 +98,10 @@ class InputController {
     spawnObject() {
         if (_APP) {
             const loader = new GLTFLoader();
-            loader.load('../assets/9mm_bullet/scene.gltf', (gltf) => {
+            loader.load('../assets/low_poly_bullet/scene.gltf', (gltf) => {
                 const spawnedObject = gltf.scene;
-                spawnedObject.scale.set(0.2, 0.2, 0.2);
-                // Set the position of the spawned object in front of the weapon and a little to the right
+                spawnedObject.rotation.z =  Math.PI / 2;
+                spawnedObject.scale.set(19.2, 19.2, 19.2);
                 const offsetDistance = 5; // Adjust this value as needed
                 const offsetY = -2; // Adjust this value to move the object more down
                 const offsetX = 1; // Adjust this value to move the object more to the right
@@ -117,7 +117,7 @@ class InputController {
                 _APP._scene.add(spawnedObject);
     
                 // Animation loop for moving the object forward
-                const moveSpeed = 10; // Adjust this value as needed
+                const moveSpeed = 200; // Adjust this value as needed
                 const animationStartTime = performance.now();
     
                 function animate() {
