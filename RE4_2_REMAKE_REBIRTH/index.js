@@ -91,47 +91,67 @@ class InputController {
   spawnObject() {
     if (_APP) {
       const loader = new GLTFLoader();
-  
+
+
+
       // Carregamento do modelo GLTF
       loader.load("../assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
         spawnedObject.scale.set(20, 20, 20); // Ajuste conforme necessário
-  
+
         // Rotação inicial de 45 graus (convertidos para radianos)
         const initialRotation = new THREE.Euler(0, Math.PI / 4, 0);
         spawnedObject.rotation.copy(initialRotation);
-  
+
         // Use a posição atual da câmera como posição de spawn
         const spawnPosition = _APP._camera.position.clone();
-  
+
         // Ajuste para obter a direção de movimento com base na rotação da câmera
         const movementDirection = new THREE.Vector3(0, 0, -1);
         movementDirection.applyQuaternion(_APP._camera.quaternion);
-  
+
         // Ajuste a distância do spawn em relação à câmera
         const spawnDistance = 5;
         spawnPosition.addScaledVector(movementDirection, spawnDistance);
-  
+
         spawnedObject.position.copy(spawnPosition);
-  
+
         // Obtenha a direção do tiro com base na rotação da câmera
         const shotDirection = movementDirection.clone();
-  
-        // Adição do objeto ao cenário
+
+        /////////////////////
+        // Criação do Cubo //
+        /////////////////////
+        const obstacleGeometry = new THREE.BoxGeometry(10, 10, 10);
+        const obstacleMaterial = new THREE.MeshBasicMaterial({
+          color: 0x00ff00,
+        });
+
+        const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+        obstacle.position.set(0, 0, 0);
+        _APP._scene.add(obstacle);
+
+        const objectBox = new THREE.Box3();
+        const obstacleBox = new THREE.Box3().setFromObject(obstacle);
+
+        /////////////////////////////////////////////////////////////
+        // Adição do tiro
         _APP._scene.add(spawnedObject);
-  
-        // Início da animação de movimento e rotação do tiro
+
+        function detectCollision() {
+          objectBox.setFromObject(spawnedObject);
+
+          if (objectBox.intersectsBox(obstacleBox)) {
+            console.log("Colisão detectada!");
+          }
+        }
         animate();
-  
+
         function animate() {
-          // Ajuste a velocidade de movimento e rotação conforme necessário
           const moveSpeed = 10;
-  
-          
-          // Move o objeto (tiro) para frente na direção obtida
+
           spawnedObject.position.addScaledVector(shotDirection, moveSpeed);
-  
-          // Rotaciona o objeto (tiro) com base na direção do movimento
+
           const rotationMatrix = new THREE.Matrix4();
           rotationMatrix.lookAt(
             spawnedObject.position,
@@ -139,22 +159,18 @@ class InputController {
             new THREE.Vector3(0, 1, 0)
           );
           spawnedObject.rotation.setFromRotationMatrix(rotationMatrix);
-  
-          // Continue o loop de animação
+
+          detectCollision(spawnedObject, obstacle);
+
           requestAnimationFrame(animate);
         }
-  
-        // Lógica de animação ou manipulação adicional
-        // ...
-  
-        // Exemplo de remoção do objeto após um período de tempo
+
         setTimeout(() => {
           _APP._scene.remove(spawnedObject);
         }, 5000); // Remova o objeto após 5 segundos (ajuste conforme necessário)
       });
     }
   }
-  
 
   update() {
     if (this.previous !== null) {
@@ -338,18 +354,17 @@ class World {
 
     this._addLights();
 
-    let loader = new GLTFLoader();                                                                                                      
+    let loader = new GLTFLoader();
     this._cenario;
 
-    loader.load('../assets/cenario/cenario.glb', (gltf) => {
-        this._cenario = gltf.scene;
-        this._cenario.scale.set(10, 10, 10);
-        this._cenario.position.y += 1;
-        this._scene.add(this._cenario);
+    loader.load("../assets/cenario/cenario.glb", (gltf) => {
+      this._cenario = gltf.scene;
+      this._cenario.scale.set(10, 10, 10);
+      this._cenario.position.y += 1;
+      this._scene.add(this._cenario);
+    });
 
-    })
-
-    this._object;                                           
+    this._object;
 
     loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
