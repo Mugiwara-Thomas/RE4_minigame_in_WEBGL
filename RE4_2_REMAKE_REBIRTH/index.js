@@ -32,6 +32,9 @@ class InputController {
     this.previous = null;
     this.previousKeys = {};
 
+    this.shootingAudio = new Audio('../assets/shooting.mp3');
+    this.shootingAudio.volume = 0.3;  
+
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
     document.addEventListener("mouseup", (e) => this._OnMouseUp(e), false);
     document.addEventListener("mousemove", (e) => this._OnMouseMove(e), false);
@@ -50,6 +53,8 @@ class InputController {
         this.current.leftButton = true;
         if (this.current.leftButton) {
           this.spawnObject();
+          this.shootingAudio.currentTime = 0;
+          this.shootingAudio.play();
         }
         break;
       }
@@ -91,12 +96,20 @@ class InputController {
   spawnObject() {
     if (_APP) {
       const loader = new GLTFLoader();
-
-
-
       // Carregamento do modelo GLTF
       loader.load("../assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
+        spawnedObject.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            const originalMaterial = child.material;
+            const newMaterial = originalMaterial.clone();
+            
+            newMaterial.emissive.setHex(0xFFD700);
+            newMaterial.emissiveIntensity = 0.5; // Ajuste conforme necessário
+            
+            child.material = newMaterial;
+          }
+        });
         spawnedObject.scale.set(20, 20, 20); // Ajuste conforme necessário
 
         // Rotação inicial de 45 graus (convertidos para radianos)
@@ -111,7 +124,7 @@ class InputController {
         movementDirection.applyQuaternion(_APP._camera.quaternion);
 
         // Ajuste a distância do spawn em relação à câmera
-        const spawnDistance = 5;
+        const spawnDistance = -4;
         spawnPosition.addScaledVector(movementDirection, spawnDistance);
 
         spawnedObject.position.copy(spawnPosition);
@@ -192,8 +205,8 @@ class FirstPersonCamera {
     this._phi = 0;
     this._theta = 0;
 
-    this._movementSpeed = 20;
-    this._altura = 12;
+    this._movementSpeed = 35;
+    this._altura = 15;
     this._object = object;
   }
 
@@ -361,6 +374,8 @@ class World {
       this._cenario = gltf.scene;
       this._cenario.scale.set(10, 10, 10);
       this._cenario.position.y += 1;
+      this._cenario.position.x = this._camera.position.x;
+      this._cenario.position.z = this._camera.position.z - 80;
       this._scene.add(this._cenario);
     });
 
@@ -373,7 +388,6 @@ class World {
 
       this._addCrosshair();
 
-      // Initialize controls after loading the object
       this.controls = new FirstPersonCamera(this._camera, this._object);
 
       this._addGrid();
@@ -394,7 +408,7 @@ class World {
         depthWrite: false,
       })
     );
-    this._crosshairSprite.scale.set(0.1, 0.1 * this._camera.aspect, 1);
+    this._crosshairSprite.scale.set(0.06, 0.1 * this._camera.aspect, 1);
     this._crosshairSprite.position.set(0, 0, -10);
     this._uiScene.add(this._crosshairSprite);
   }
@@ -439,7 +453,7 @@ class World {
     this._scene.add(light);
 
     light = new THREE.AmbientLight(0x101010);
-    light.intensity = 10;
+    light.intensity = 75;
     this._scene.add(light);
   }
 
