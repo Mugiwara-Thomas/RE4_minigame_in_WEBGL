@@ -241,9 +241,11 @@ class FirstPersonCamera {
 
   _UpdatePosition(timeElapsedS) {
     const moveSpeed = this._movementSpeed * timeElapsedS;
-
+  
+    // Store the current position for collision detection
+    const currentPosition = this._camera.position.clone();
+  
     if (this._input.keyPressed["w"]) {
-      console.log("Moving forward");
       const forward = new THREE.Vector3(0, 0, -1);
       forward
         .applyQuaternion(this._rotation)
@@ -252,42 +254,43 @@ class FirstPersonCamera {
       this._camera.position.add(forward);
       this.walkingAudio.play();
     }
-
+  
     if (this._input.keyPressed["s"]) {
-      console.log("Moving Back");
-      const forward = new THREE.Vector3(0, 0, 1);
-      forward
+      const backward = new THREE.Vector3(0, 0, 1);
+      backward
         .applyQuaternion(this._rotation)
         .normalize()
         .multiplyScalar(moveSpeed);
-      this._camera.position.add(forward);
+      this._camera.position.add(backward);
       this.walkingAudio.play();
     }
-
+  
     if (this._input.keyPressed["a"]) {
-      console.log("Moving Left");
-      const forward = new THREE.Vector3(-1, 0, 0);
-      forward
+      const left = new THREE.Vector3(-1, 0, 0);
+      left
         .applyQuaternion(this._rotation)
         .normalize()
         .multiplyScalar(moveSpeed);
-      this._camera.position.add(forward);
+      this._camera.position.add(left);
       this.walkingAudio.play();
     }
+  
     if (this._input.keyPressed["d"]) {
-      console.log("Moving Left");
-      const forward = new THREE.Vector3(1, 0, 0);
-      forward
+      const right = new THREE.Vector3(1, 0, 0);
+      right
         .applyQuaternion(this._rotation)
         .normalize()
         .multiplyScalar(moveSpeed);
-      this._camera.position.add(forward);
+      this._camera.position.add(right);
       this.walkingAudio.play();
     }
-
+  
+    // Check for collisions with the scene boundaries
+    this._checkSceneCollision(currentPosition);
+  
     this._camera.position.y = Math.max(this._camera.position.y, this._altura);
     this._camera.position.y = Math.min(this._camera.position.y, this._altura);
-
+  
     this._object.position.y = Math.max(
       this._camera.position.y,
       this._altura - 1
@@ -297,7 +300,26 @@ class FirstPersonCamera {
       this._altura - 1
     );
   }
-
+  
+  _checkSceneCollision(currentPosition) {
+    // Define your scene boundaries
+    const minX = 25;
+    const maxX = 135;
+    const minZ = -20;
+    const maxZ = 20;
+  
+    // Check if the new position is outside the boundaries
+    if (
+      this._camera.position.x < minX ||
+      this._camera.position.x > maxX ||
+      this._camera.position.z < minZ ||
+      this._camera.position.z > maxZ
+    ) {
+      // If outside boundaries, revert to the previous position
+      this._camera.position.copy(currentPosition);
+    }
+  }
+  
   clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
