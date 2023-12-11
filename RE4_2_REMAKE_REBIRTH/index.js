@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+const squares = [];
 
 class InputController {
   constructor() {
@@ -33,8 +34,8 @@ class InputController {
     this.previous = null;
     this.previousKeys = {};
 
-    this.shootingAudio = new Audio('../assets/shooting.mp3');
-    this.shootingAudio.volume = 0.25;  
+    this.shootingAudio = new Audio("../assets/shooting.mp3");
+    this.shootingAudio.volume = 0.25;
 
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
     document.addEventListener("mouseup", (e) => this._OnMouseUp(e), false);
@@ -103,10 +104,10 @@ class InputController {
           if (child instanceof THREE.Mesh) {
             const originalMaterial = child.material;
             const newMaterial = originalMaterial.clone();
-            
-            newMaterial.emissive.setHex(0xFFD700);
+
+            newMaterial.emissive.setHex(0xffd700);
             newMaterial.emissiveIntensity = 0.5; // Ajuste conforme necessário
-            
+
             child.material = newMaterial;
           }
         });
@@ -132,32 +133,16 @@ class InputController {
         // Obtenha a direção do tiro com base na rotação da câmera
         const shotDirection = movementDirection.clone();
 
-        /////////////////////
-        // Criação do Cubo //
-        /////////////////////
-        const obstacleGeometry = new THREE.BoxGeometry(10, 10, 10);
-        const obstacleMaterial = new THREE.MeshBasicMaterial({
-          color: 0x00ff00,
-        });
-
-        const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-        obstacle.position.set(0, 0, 0);
-        _APP._scene.add(obstacle);
-
-        const objectBox = new THREE.Box3();
-        const obstacleBox = new THREE.Box3().setFromObject(obstacle);
-
-        /////////////////////////////////////////////////////////////
         // Adição do tiro
         _APP._scene.add(spawnedObject);
 
-        function detectCollision() {
-          objectBox.setFromObject(spawnedObject);
+        // function detectCollision() {
+        //   objectBox.setFromObject(spawnedObject);
 
-          if (objectBox.intersectsBox(obstacleBox)) {
-            console.log("Colisão detectada!");
-          }
-        }
+        //   if (objectBox.intersectsBox(obstacleBox)) {
+        //     console.log("Colisão detectada!");
+        //   }
+        // }
         animate();
 
         function animate() {
@@ -173,7 +158,7 @@ class InputController {
           );
           spawnedObject.rotation.setFromRotationMatrix(rotationMatrix);
 
-          detectCollision(spawnedObject, obstacle);
+          // detectCollision(spawnedObject, obstacle);
 
           requestAnimationFrame(animate);
         }
@@ -209,8 +194,8 @@ class FirstPersonCamera {
     this._altura = 15;
     this._object = object;
 
-    this.walkingAudio = new Audio('../assets/walking.mp3');
-    this.walkingAudio.volume = 1;  
+    this.walkingAudio = new Audio("../assets/walking.mp3");
+    this.walkingAudio.volume = 1;
   }
 
   update(timeElapsedS) {
@@ -409,12 +394,16 @@ class World {
     });
 
     this._object;
-
+    // Função para criar um quadrado
+    
+    const squarePosition = new THREE.Vector3(0, 5, -10); // Posição desejada
+    // const newSquare = this._createSquare(squarePosition);
+    
     loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
       this._scene.add(this._object);
-
+      
       this._addCrosshair();
 
       this.controls = new FirstPersonCamera(this._camera, this._object);
@@ -423,6 +412,20 @@ class World {
 
       this._RAF();
     });
+  }
+  _createSquare(position) {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const square = new THREE.Mesh(geometry, material);
+    square.position.copy(position); // Define a posição do quadrado conforme fornecido
+
+    // Adiciona o quadrado ao array global
+    squares.push(square);
+
+    // Adiciona o quadrado à cena global (_APP._scene)
+    _APP._scene.add(square);
+
+    return square; // Retorna o quadrado criado
   }
 
   _addCrosshair() {
