@@ -27,7 +27,17 @@
     <audio autoplay loop src="../assets/ost.mp3" id = "ost"></audio>
     <script>
         var ost = document.getElementById("ost");
-        ost.volume = 0.3;
+        var defaultVolume = 0.35;
+        ost.volume = defaultVolume;
+
+        var isMuted = false;
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key.toLowerCase() === 'm') {
+                isMuted = !isMuted; 
+                ost.volume = isMuted ? 0 : 0.3; 
+            }
+        });
     </script>
 </body>
 

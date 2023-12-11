@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+
 class InputController {
   constructor() {
     this._Initialize();
@@ -33,7 +34,7 @@ class InputController {
     this.previousKeys = {};
 
     this.shootingAudio = new Audio('../assets/shooting.mp3');
-    this.shootingAudio.volume = 0.3;  
+    this.shootingAudio.volume = 0.25;  
 
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
     document.addEventListener("mouseup", (e) => this._OnMouseUp(e), false);
@@ -88,7 +89,6 @@ class InputController {
 
     this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
     this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
-
     //this.current.mouseXDelta = e.movementX;
     //this.current.mouseYDelta = e.movementY;
   }
@@ -205,9 +205,12 @@ class FirstPersonCamera {
     this._phi = 0;
     this._theta = 0;
 
-    this._movementSpeed = 35;
+    this._movementSpeed = 30;
     this._altura = 15;
     this._object = object;
+
+    this.walkingAudio = new Audio('../assets/walking.mp3');
+    this.walkingAudio.volume = 1;  
   }
 
   update(timeElapsedS) {
@@ -247,6 +250,7 @@ class FirstPersonCamera {
         .normalize()
         .multiplyScalar(moveSpeed);
       this._camera.position.add(forward);
+      this.walkingAudio.play();
     }
 
     if (this._input.keyPressed["s"]) {
@@ -257,6 +261,7 @@ class FirstPersonCamera {
         .normalize()
         .multiplyScalar(moveSpeed);
       this._camera.position.add(forward);
+      this.walkingAudio.play();
     }
 
     if (this._input.keyPressed["a"]) {
@@ -267,6 +272,7 @@ class FirstPersonCamera {
         .normalize()
         .multiplyScalar(moveSpeed);
       this._camera.position.add(forward);
+      this.walkingAudio.play();
     }
     if (this._input.keyPressed["d"]) {
       console.log("Moving Left");
@@ -276,6 +282,7 @@ class FirstPersonCamera {
         .normalize()
         .multiplyScalar(moveSpeed);
       this._camera.position.add(forward);
+      this.walkingAudio.play();
     }
 
     this._camera.position.y = Math.max(this._camera.position.y, this._altura);
