@@ -293,7 +293,7 @@ class FirstPersonCamera {
     }
 
     // Check for collisions with the scene boundaries
-    // this._checkSceneCollision(currentPosition);
+    this._checkSceneCollision(currentPosition);
 
     this._camera.position.y = Math.max(this._camera.position.y, this._altura);
     this._camera.position.y = Math.min(this._camera.position.y, this._altura);
@@ -405,16 +405,16 @@ class World {
     this._addLights();
 
     let loader = new GLTFLoader();
-    // this._cenario;
+    this._cenario;
 
-    // loader.load("../assets/cenario/cenario.glb", (gltf) => {
-    //   this._cenario = gltf.scene;
-    //   this._cenario.scale.set(10, 10, 10);
-    //    this._cenario.position.y += 1;
-    //    this._cenario.position.x = this._camera.position.x;
-    //    this._cenario.position.z = this._camera.position.z - 80;
-    //    this._scene.add(this._cenario);
-    // });
+    loader.load("../assets/cenario/cenario.glb", (gltf) => {
+      this._cenario = gltf.scene;
+      this._cenario.scale.set(10, 10, 10);
+       this._cenario.position.y += 1;
+       this._cenario.position.x = this._camera.position.x;
+       this._cenario.position.z = this._camera.position.z - 80;
+       this._scene.add(this._cenario);
+    });
 
     this._object;
     // Função para criar um quadrado
@@ -435,8 +435,8 @@ class World {
     const squareInfo2 = {
       movable: true,
       movementLimits: {
-        left: -10,
-        right: 10
+        left: -1,
+        right: -1
       },
       axis: 'x'
     };
