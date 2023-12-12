@@ -136,15 +136,21 @@ class InputController {
         // Adição do tiro
         _APP._scene.add(spawnedObject);
 
-        // function detectCollision() {
-        //   objectBox.setFromObject(spawnedObject);
+        function detectCollision(object, rectangles) {
+          const objectBox = new THREE.Box3().setFromObject(object);
 
-        //   if (objectBox.intersectsBox(obstacleBox)) {
-        //     console.log("Colisão detectada!");
-        //   }
-        // }
+          for (let i = 0; i < rectangles.length; i++) {
+            const rectangle = rectangles[i];
+            const rectangleBox = new THREE.Box3().setFromObject(rectangle);
+
+            if (objectBox.intersectsBox(rectangleBox)) {
+              console.log("Colisão detectada!");
+              _APP._scene.remove(rectangle);
+              rectangles.splice(i, 1);
+            }
+          }
+        }
         animate();
-
         function animate() {
           const moveSpeed = 10;
 
@@ -158,8 +164,7 @@ class InputController {
           );
           spawnedObject.rotation.setFromRotationMatrix(rotationMatrix);
 
-          // detectCollision(spawnedObject, obstacle);
-
+          detectCollision(spawnedObject, squares);
           requestAnimationFrame(animate);
         }
 
@@ -226,10 +231,10 @@ class FirstPersonCamera {
 
   _UpdatePosition(timeElapsedS) {
     const moveSpeed = this._movementSpeed * timeElapsedS;
-  
+
     // Store the current position for collision detection
     const currentPosition = this._camera.position.clone();
-  
+
     if (this._input.keyPressed["w"]) {
       const forward = new THREE.Vector3(0, 0, -1);
       forward
@@ -239,7 +244,7 @@ class FirstPersonCamera {
       this._camera.position.add(forward);
       this.walkingAudio.play();
     }
-  
+
     if (this._input.keyPressed["s"]) {
       const backward = new THREE.Vector3(0, 0, 1);
       backward
@@ -249,7 +254,7 @@ class FirstPersonCamera {
       this._camera.position.add(backward);
       this.walkingAudio.play();
     }
-  
+
     if (this._input.keyPressed["a"]) {
       const left = new THREE.Vector3(-1, 0, 0);
       left
@@ -259,7 +264,7 @@ class FirstPersonCamera {
       this._camera.position.add(left);
       this.walkingAudio.play();
     }
-  
+
     if (this._input.keyPressed["d"]) {
       const right = new THREE.Vector3(1, 0, 0);
       right
@@ -269,13 +274,13 @@ class FirstPersonCamera {
       this._camera.position.add(right);
       this.walkingAudio.play();
     }
-  
+
     // Check for collisions with the scene boundaries
-    this._checkSceneCollision(currentPosition);
-  
+    // this._checkSceneCollision(currentPosition);
+
     this._camera.position.y = Math.max(this._camera.position.y, this._altura);
     this._camera.position.y = Math.min(this._camera.position.y, this._altura);
-  
+
     this._object.position.y = Math.max(
       this._camera.position.y,
       this._altura - 1
@@ -285,14 +290,14 @@ class FirstPersonCamera {
       this._altura - 1
     );
   }
-  
+
   _checkSceneCollision(currentPosition) {
     // Define your scene boundaries
     const minX = 25;
     const maxX = 135;
     const minZ = -20;
     const maxZ = 20;
-  
+
     // Check if the new position is outside the boundaries
     if (
       this._camera.position.x < minX ||
@@ -304,7 +309,7 @@ class FirstPersonCamera {
       this._camera.position.copy(currentPosition);
     }
   }
-  
+
   clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
@@ -382,28 +387,41 @@ class World {
     this._addLights();
 
     let loader = new GLTFLoader();
-    this._cenario;
+    // this._cenario;
 
-    loader.load("../assets/cenario/cenario.glb", (gltf) => {
-      this._cenario = gltf.scene;
-      this._cenario.scale.set(10, 10, 10);
-      this._cenario.position.y += 1;
-      this._cenario.position.x = this._camera.position.x;
-      this._cenario.position.z = this._camera.position.z - 80;
-      this._scene.add(this._cenario);
-    });
+    // loader.load("../assets/cenario/cenario.glb", (gltf) => {
+    //   this._cenario = gltf.scene;
+    //   this._cenario.scale.set(10, 10, 10);
+    //   this._cenario.position.y += 1;
+    //   this._cenario.position.x = this._camera.position.x;
+    //   this._cenario.position.z = this._camera.position.z - 80;
+    //   this._scene.add(this._cenario);
+    // });
 
     this._object;
     // Função para criar um quadrado
-    
+
     const squarePosition = new THREE.Vector3(0, 5, -10); // Posição desejada
-    // const newSquare = this._createSquare(squarePosition);
-    
+    const newSquare = this._createTarget(
+      squarePosition,
+      "../assets/target/scene.gltf"
+    );
+    const squarePosition2 = new THREE.Vector3(30, 5, -10); // Posição desejada
+    const newSquare2 = this._createTarget(
+      squarePosition2,
+      "../assets/target/scene.gltf"
+    );
+    const squarePosition3 = new THREE.Vector3(60, 5, -10); // Posição desejada
+    const newSquare3 = this._createTarget(
+      squarePosition3,
+      "../assets/target/scene.gltf"
+    );
+
     loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
       this._scene.add(this._object);
-      
+
       this._addCrosshair();
 
       this.controls = new FirstPersonCamera(this._camera, this._object);
@@ -413,19 +431,33 @@ class World {
       this._RAF();
     });
   }
-  _createSquare(position) {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const square = new THREE.Mesh(geometry, material);
-    square.position.copy(position); // Define a posição do quadrado conforme fornecido
+  _createTarget(position, modelPath) {
+    const loader = new GLTFLoader();
+    loader.load(modelPath, (gltf) => {
+      const model = gltf.scene;
+      model.position.copy(position);
+      model.scale.set(0.05, 0.05, 0.05);
+      this._scene.add(model);
 
-    // Adiciona o quadrado ao array global
-    squares.push(square);
+      squares.push(model);
+    });
+  }
 
-    // Adiciona o quadrado à cena global (_APP._scene)
-    _APP._scene.add(square);
+  _moveTargets() {
+    squares.forEach((square) => {
+      const moveSpeed = 2; // Ajuste conforme necessário
 
-    return square; // Retorna o quadrado criado
+      // Atualize a posição dos alvos
+      square.position.x -= moveSpeed;
+
+      // Verifique se os alvos estão fora dos limites e reposicione, se necessário
+      const leftLimit = -100; // Defina o limite esquerdo
+      const rightLimit = 100; // Defina o limite direito
+      if (square.position.x < leftLimit) {
+        // Reposicione o alvo para a direita
+        square.position.x = rightLimit;
+      }
+    });
   }
 
   _addCrosshair() {
@@ -514,6 +546,8 @@ class World {
       this._previousRAF = t;
       this._RAF();
     });
+    this._moveTargets();
+
   }
 
   _Step(timeElapsed) {
