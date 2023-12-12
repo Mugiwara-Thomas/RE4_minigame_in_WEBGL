@@ -21,6 +21,7 @@ class InputController {
   constructor() {
     this._Initialize();
     this.keyPressed = {};
+    this.canShoot = true;
   }
 
   _handleKeyDown = (e) => {
@@ -65,16 +66,18 @@ class InputController {
           return;
         }
 
-        this.current.leftButton = true;
-        if (this.current.leftButton) {
-          this.spawnObject();
-          this.shootingAudio.currentTime = 0;
-          this.shootingAudio.play();
+        if (this.canShoot) {
+          this.current.leftButton = true;
+          if (this.current.leftButton) {
+            this.spawnObject();
+            this.shootingAudio.currentTime = 0;
+            this.shootingAudio.play();
+            this.canShoot = false; // Set to false to prevent shooting for the delay period
+            setTimeout(() => {
+              this.canShoot = true; // Set back to true after the delay period
+            }, 1000); // 1.5 seconds delay
+          }
         }
-        break;
-      }
-      case 1: {
-        this.current.rightButton = true;
         break;
       }
     }
