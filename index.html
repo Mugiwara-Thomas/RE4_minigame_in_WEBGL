@@ -5,7 +5,7 @@
     <title>Simple 3D World</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="./game/base.css">
     <style>
         body {
             margin: 0;
@@ -64,13 +64,13 @@
         <div id="loading-text">Carregando...</div>
     </div>
 
-    <audio autoplay loop src="../assets/ost.mp3" id="ost"></audio>
+    <audio autoplay loop src="./assets/ost.mp3" id="ost"></audio>
 
     <script type="importmap">
         {
             "imports": {
-                "three": "./three.module.js",
-                "three/addons/": "./jsm/"
+                "three": "./game/three.module.js",
+                "three/addons/": "./game/jsm/"
             }
         }
     </script>
@@ -104,7 +104,7 @@
             overlay.style.display = 'none';
         }, 5000);
     </script>
-    <script src="./index.js" type="module"></script>
+    <script src="./game/index.js" type="module"></script>
 </body>
 
 </html>
