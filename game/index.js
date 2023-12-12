@@ -7,6 +7,8 @@ const squares = {};
 
 let pontos = 0;
 
+let counter2 = 0;
+
 function atualizarPontosDisplay() {
   var pontosTextElement = document.getElementById('pontos-text');
   if (pontosTextElement) {
@@ -45,7 +47,7 @@ class InputController {
     this.previous = null;
     this.previousKeys = {};
 
-    this.shootingAudio = new Audio("../assets/shooting.mp3");
+    this.shootingAudio = new Audio("assets/shooting.mp3");
     this.shootingAudio.volume = 0.25;
 
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
@@ -109,7 +111,7 @@ class InputController {
     if (_APP) {
       const loader = new GLTFLoader();
       // Carregamento do modelo GLTF
-      loader.load("../assets/low_poly_bullet/bala.glb", (gltf) => {
+      loader.load("assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
         spawnedObject.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -122,7 +124,7 @@ class InputController {
             child.material = newMaterial;
           }
         });
-        spawnedObject.scale.set(20, 20, 20); // Ajuste conforme necessário
+        spawnedObject.scale.set(20, 20, 500); // Ajuste conforme necessário
 
         // Rotação inicial de 45 graus (convertidos para radianos)
         const initialRotation = new THREE.Euler(0, Math.PI / 4, 0);
@@ -157,6 +159,7 @@ class InputController {
         
             if (objectBox.intersectsBox(rectangleBox)) {
               console.log("Colisão detectada!");
+              counter2--;
               pontos++;
               atualizarPontosDisplay();
               _APP._scene.remove(rectangle.model);
@@ -214,7 +217,7 @@ class FirstPersonCamera {
     this._altura = 15;
     this._object = object;
 
-    this.walkingAudio = new Audio("../assets/walking.mp3");
+    this.walkingAudio = new Audio("assets/walking.mp3");
     this.walkingAudio.volume = 1;
   }
 
@@ -405,7 +408,7 @@ class World {
     let loader = new GLTFLoader();
     this._cenario;
 
-    loader.load("../assets/cenario/cenario.glb", (gltf) => {
+    loader.load("assets/cenario.glb", (gltf) => {
       this._cenario = gltf.scene;
       this._cenario.scale.set(10, 10, 10);
        this._cenario.position.y += 1;
@@ -417,44 +420,43 @@ class World {
     this._object;
     // Função para criar um quadrado
 
-    const targetPosition = new THREE.Vector3(0, 10, -150);
-    const targetInfo = {
-      movable: true,
-      movementLimits: {
-        left: -100,
-        right: 150
-      },
-      axis: 'x'
-    };
+let targets = [];
     
-    const newTarget = this._createTarget(targetPosition, "../assets/target/scene.gltf", targetInfo);
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+let counter = 0;
+
+const intervalId = setInterval(() => {
+    counter++;
+    console.log(counter);
+    console.log(counter2);
+    if (counter2 > 20){
+      counter2 = 0;
+    }
+    if (counter > 1){
+      counter = 0;
+    }
+    if (counter === 1 && counter2 < 20) {
+      const targetPosition = new THREE.Vector3(0, 10, getRandomInt(-50, -150));
+      const targetInfo = {
+        movable: true,
+        movementLimits: {
+          left: -150,
+          right: 150
+        },
+        axis: 'x'
+      };  
+      const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
+      targets.push(newTarget);
+      counter = 0;
+      counter2++;
+    }
+}, 1000);
     
-    const targetPosition2 = new THREE.Vector3(30, 5, 30);
-    const targetInfo2 = {
-      movable: true,
-      movementLimits: {
-        left: -1,
-        right: -1
-      },
-      axis: 'x'
-    };
-    
-    const newTarget2 = this._createTarget(targetPosition2, "../assets/target/scene.gltf", targetInfo2);
-    
-    const targetPosition3 = new THREE.Vector3(0, 10, -150);
-    const targetInfo3 = {
-      movable: true,
-      movementLimits: {
-        left: -150,
-        right: 150
-      },
-      axis: 'x'
-    };
-    
-    const newTarget3 = this._createTarget(targetPosition3, "../assets/target/scene.gltf", targetInfo3);
-    
-    
-    loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
+    loader.load("assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
       this._scene.add(this._object);
@@ -497,7 +499,6 @@ class World {
   
       if (moveSpeed > 0) {
         const { left, right } = info.movementLimits;
-        
         // Atualize a posição apenas no eixo especificado
         if (axis === 'x') {
           square.position.x -= moveSpeed;
@@ -529,7 +530,7 @@ class World {
 
   _addCrosshair() {
     const loader = new THREE.TextureLoader();
-    const crosshair = loader.load("../assets/mira.png");
+    const crosshair = loader.load("assets/mira.png");
     this._crosshairSprite = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: crosshair,
