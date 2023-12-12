@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-const squares = [];
+const squares = {};
+
 
 let pontos = 0;
 
@@ -292,7 +293,7 @@ class FirstPersonCamera {
     }
 
     // Check for collisions with the scene boundaries
-    this._checkSceneCollision(currentPosition);
+    // this._checkSceneCollision(currentPosition);
 
     this._camera.position.y = Math.max(this._camera.position.y, this._altura);
     this._camera.position.y = Math.min(this._camera.position.y, this._altura);
@@ -404,36 +405,57 @@ class World {
     this._addLights();
 
     let loader = new GLTFLoader();
-    this._cenario;
+    // this._cenario;
 
-    loader.load("../assets/cenario/cenario.glb", (gltf) => {
-      this._cenario = gltf.scene;
-      this._cenario.scale.set(10, 10, 10);
-       this._cenario.position.y += 1;
-       this._cenario.position.x = this._camera.position.x;
-       this._cenario.position.z = this._camera.position.z - 80;
-       this._scene.add(this._cenario);
-    });
+    // loader.load("../assets/cenario/cenario.glb", (gltf) => {
+    //   this._cenario = gltf.scene;
+    //   this._cenario.scale.set(10, 10, 10);
+    //    this._cenario.position.y += 1;
+    //    this._cenario.position.x = this._camera.position.x;
+    //    this._cenario.position.z = this._camera.position.z - 80;
+    //    this._scene.add(this._cenario);
+    // });
 
     this._object;
     // Função para criar um quadrado
 
-    const squarePosition = new THREE.Vector3(0, 5, -10); // Posição desejada
-    const newSquare = this._createTarget(
-      squarePosition,
-      "../assets/target/scene.gltf"
-    );
-    const squarePosition2 = new THREE.Vector3(30, 5, -10); // Posição desejada
-    const newSquare2 = this._createTarget(
-      squarePosition2,
-      "../assets/target/scene.gltf"
-    );
-    const squarePosition3 = new THREE.Vector3(60, 5, -10); // Posição desejada
-    const newSquare3 = this._createTarget(
-      squarePosition3,
-      "../assets/target/scene.gltf"
-    );
-
+    const squarePosition = new THREE.Vector3(0, 5, 10);
+    const squareInfo = {
+      movable: true,
+      movementLimits: {
+        left: -50,
+        right: 50
+      },
+      axis: 'x'
+    };
+    
+    const newSquare = this._createTarget(squarePosition, "../assets/target/scene.gltf", squareInfo);
+    
+    const squarePosition2 = new THREE.Vector3(30, 5, 30);
+    const squareInfo2 = {
+      movable: true,
+      movementLimits: {
+        left: -10,
+        right: 10
+      },
+      axis: 'x'
+    };
+    
+    const newSquare2 = this._createTarget(squarePosition2, "../assets/target/scene.gltf", squareInfo2);
+    
+    const squarePosition3 = new THREE.Vector3(60, 5, 40);
+    const squareInfo3 = {
+      movable: true,
+      movementLimits: {
+        left: -100,
+        right: 100
+      },
+      axis: 'z'
+    };
+    
+    const newSquare3 = this._createTarget(squarePosition3, "../assets/target/scene.gltf", squareInfo3);
+    
+    
     loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
@@ -448,34 +470,64 @@ class World {
       this._RAF();
     });
   }
-  _createTarget(position, modelPath) {
+  _createTarget(position, modelPath, info) {
     const loader = new GLTFLoader();
     loader.load(modelPath, (gltf) => {
       const model = gltf.scene;
       model.position.copy(position);
       model.scale.set(0.05, 0.05, 0.05);
       this._scene.add(model);
-
-      squares.push(model);
+  
+      const movable = info.movable !== undefined ? info.movable : false;
+      const movementLimits = info.movementLimits || { left: -Infinity, right: Infinity };
+      const axis = info.axis || 'x'; // Defina 'x' como padrão se nenhum eixo for fornecido
+  
+      squares[model.uuid] = {
+        model,
+        info: { ...info, movable, movementLimits, axis } // Armazene a informação do eixo
+      };
     });
   }
+  
 
   _moveTargets() {
-    squares.forEach((square) => {
-      const moveSpeed = 2; // Ajuste conforme necessário
-
-      // Atualize a posição dos alvos
-      square.position.x -= moveSpeed;
-
-      // Verifique se os alvos estão fora dos limites e reposicione, se necessário
-      const leftLimit = -100; // Defina o limite esquerdo
-      const rightLimit = 100; // Defina o limite direito
-      if (square.position.x < leftLimit) {
-        // Reposicione o alvo para a direita
-        square.position.x = rightLimit;
+    Object.keys(squares).forEach((key) => {
+      const square = squares[key].model;
+      const info = squares[key].info;
+      const moveSpeed = info.movable ? 2 : 0;
+      const axis = info.axis || 'x'; // Obtenha o eixo do alvo ou use 'x' como padrão
+  
+      if (moveSpeed > 0) {
+        const { left, right } = info.movementLimits;
+        
+        // Atualize a posição apenas no eixo especificado
+        if (axis === 'x') {
+          square.position.x -= moveSpeed;
+          if (square.position.x < left) {
+            square.position.x = right;
+          } else if (square.position.x > right) {
+            square.position.x = left;
+          }
+        } else if (axis === 'y') {
+          square.position.y -= moveSpeed;
+          if (square.position.y < left) {
+            square.position.y = right;
+          } else if (square.position.y > right) {
+            square.position.y = left;
+          }
+        } else if (axis === 'z') {
+          square.position.z -= moveSpeed;
+          if (square.position.z < left) {
+            square.position.z = right;
+          } else if (square.position.z > right) {
+            square.position.z = left;
+          }
+        }
       }
     });
   }
+  
+
 
   _addCrosshair() {
     const loader = new THREE.TextureLoader();
