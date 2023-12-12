@@ -7,3 +7,7 @@ body {
   padding: 0;
   overscroll-behavior: none;
 }
+
+*{
+  font-family: sans-serif;
+}

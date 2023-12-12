@@ -4,6 +4,16 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const squares = [];
 
+let pontos = 0;
+
+function atualizarPontosDisplay() {
+  var pontosTextElement = document.getElementById('pontos-text');
+  if (pontosTextElement) {
+      pontosTextElement.innerText = 'Pontos: ' + pontos;
+  }
+}
+
+atualizarPontosDisplay()
 class InputController {
   constructor() {
     this._Initialize();
@@ -138,18 +148,24 @@ class InputController {
 
         function detectCollision(object, rectangles) {
           const objectBox = new THREE.Box3().setFromObject(object);
-
+      
           for (let i = 0; i < rectangles.length; i++) {
-            const rectangle = rectangles[i];
-            const rectangleBox = new THREE.Box3().setFromObject(rectangle);
-
-            if (objectBox.intersectsBox(rectangleBox)) {
-              console.log("Colisão detectada!");
-              _APP._scene.remove(rectangle);
-              rectangles.splice(i, 1);
-            }
+              const rectangle = rectangles[i];
+              const rectangleBox = new THREE.Box3().setFromObject(rectangle);
+      
+              if (objectBox.intersectsBox(rectangleBox)) {
+                  console.log("Colisão detectada!");
+                  pontos += 1;
+                  console.log(pontos);
+      
+                  // Atualize a exibição dos pontos
+                  atualizarPontosDisplay();
+      
+                  _APP._scene.remove(rectangle);
+                  rectangles.splice(i, 1);
+              }
           }
-        }
+      }
         animate();
         function animate() {
           const moveSpeed = 10;
