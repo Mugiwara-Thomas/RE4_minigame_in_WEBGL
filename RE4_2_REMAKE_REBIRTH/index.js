@@ -158,6 +158,7 @@ class InputController {
             if (objectBox.intersectsBox(rectangleBox)) {
               console.log("Colisão detectada!");
               pontos++;
+              atualizarPontosDisplay();
               _APP._scene.remove(rectangle.model);
               delete rectangles[key];
             }
@@ -166,7 +167,7 @@ class InputController {
         
         animate();
         function animate() {
-          const moveSpeed = 10;
+          const moveSpeed = 20;
 
           spawnedObject.position.addScaledVector(shotDirection, moveSpeed);
 
@@ -184,7 +185,7 @@ class InputController {
 
         setTimeout(() => {
           _APP._scene.remove(spawnedObject);
-        }, 5000); // Remova o objeto após 5 segundos (ajuste conforme necessário)
+        }, 10000); // Remova o objeto após 5 segundos (ajuste conforme necessário)
       });
     }
   }
@@ -416,20 +417,20 @@ class World {
     this._object;
     // Função para criar um quadrado
 
-    const squarePosition = new THREE.Vector3(0, 5, 10);
-    const squareInfo = {
+    const targetPosition = new THREE.Vector3(0, 10, -150);
+    const targetInfo = {
       movable: true,
       movementLimits: {
-        left: -50,
-        right: 50
+        left: -100,
+        right: 150
       },
       axis: 'x'
     };
     
-    const newSquare = this._createTarget(squarePosition, "../assets/target/scene.gltf", squareInfo);
+    const newTarget = this._createTarget(targetPosition, "../assets/target/scene.gltf", targetInfo);
     
-    const squarePosition2 = new THREE.Vector3(30, 5, 30);
-    const squareInfo2 = {
+    const targetPosition2 = new THREE.Vector3(30, 5, 30);
+    const targetInfo2 = {
       movable: true,
       movementLimits: {
         left: -1,
@@ -438,19 +439,19 @@ class World {
       axis: 'x'
     };
     
-    const newSquare2 = this._createTarget(squarePosition2, "../assets/target/scene.gltf", squareInfo2);
+    const newTarget2 = this._createTarget(targetPosition2, "../assets/target/scene.gltf", targetInfo2);
     
-    const squarePosition3 = new THREE.Vector3(60, 5, 40);
-    const squareInfo3 = {
+    const targetPosition3 = new THREE.Vector3(0, 10, -150);
+    const targetInfo3 = {
       movable: true,
       movementLimits: {
-        left: -100,
-        right: 100
+        left: -150,
+        right: 150
       },
-      axis: 'z'
+      axis: 'x'
     };
     
-    const newSquare3 = this._createTarget(squarePosition3, "../assets/target/scene.gltf", squareInfo3);
+    const newTarget3 = this._createTarget(targetPosition3, "../assets/target/scene.gltf", targetInfo3);
     
     
     loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
@@ -491,7 +492,7 @@ class World {
     Object.keys(squares).forEach((key) => {
       const square = squares[key].model;
       const info = squares[key].info;
-      const moveSpeed = info.movable ? 2 : 0;
+      const moveSpeed = info.movable ? 1 : 0;
       const axis = info.axis || 'x'; // Obtenha o eixo do alvo ou use 'x' como padrão
   
       if (moveSpeed > 0) {
