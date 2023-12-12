@@ -7,11 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="base.css">
     <style>
-        body:hover {
+        body {
+            margin: 0;
             overflow: hidden;
         }
 
-        /* Estilos para o overlay de loading */
         #overlay {
             position: fixed;
             display: flex;
@@ -25,6 +25,24 @@
             z-index: 9999;
         }
 
+        #pontos-text {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 56px;
+            z-index: 9999;
+        }
+
+        #controles-text {
+            position: fixed;
+            top: 100px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            z-index: 9999;
+        }
+
         #loading-text {
             color: white;
             font-size: 24px;
@@ -33,7 +51,14 @@
 </head>
 
 <body>
-    <!-- Overlay de loading -->
+    <div id="pontos-text">Pontos:</div>
+
+    <div id="controles-text">W A S D: Movimento<br>
+        Botão Esquerdo do Mouse: Atirar<br>
+        M: Silenciar Musica<br>
+        C: Ocultar Controles
+    </div>
+
     <div id="overlay">
         <div id="loading-text">Carregando...</div>
     </div>
@@ -51,22 +76,28 @@
     <script>
         var ost = document.getElementById("ost");
         var defaultVolume = 0.35;
+        var isControllerHidden = false;
         ost.volume = defaultVolume;
 
-        var isMuted = false; // Alterei o valor inicial para false
+        var isMuted = false;
 
         document.addEventListener("keydown", function (event) {
             if (event.key.toLowerCase() === 'm') {
                 isMuted = !isMuted;
-                ost.volume = isMuted ? 0 : defaultVolume; // Corrigi o valor do volume quando desmutado
+                ost.volume = isMuted ? 0 : defaultVolume;
+            }
+
+            if (event.key.toLowerCase() === 'c') {
+                isControllerHidden = !isControllerHidden;
+                var controlesText = document.getElementById('controles-text');
+                controlesText.style.display = isControllerHidden ? 'none' : 'block';
             }
         });
 
-        // Função para remover o overlay após um tempo de espera (5 segundos no exemplo)
         setTimeout(function () {
             var overlay = document.getElementById('overlay');
             overlay.style.display = 'none';
-        }, 100);
+        }, 5000);
     </script>
     <script src="./index.js" type="module"></script>
 </body>

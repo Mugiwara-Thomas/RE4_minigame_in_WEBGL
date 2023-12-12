@@ -343,6 +343,7 @@ class World {
   constructor() {
     this._Initialize();
   }
+
   _Initialize() {
     this._threejs = new THREE.WebGLRenderer();
     this._threejs.shadowMap.enabled = true;
@@ -409,10 +410,11 @@ class World {
       this.controls = new FirstPersonCamera(this._camera, this._object);
 
       this._addGrid();
-
+      
       this._RAF();
     });
   }
+
   _createSquare(position) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
