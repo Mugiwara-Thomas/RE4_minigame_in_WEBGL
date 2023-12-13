@@ -75,7 +75,7 @@ class InputController {
             this.canShoot = false; // Set to false to prevent shooting for the delay period
             setTimeout(() => {
               this.canShoot = true; // Set back to true after the delay period
-            }, 1000); // 1.5 seconds delay
+            }, 500); // 1.5 seconds delay
           }
         }
         break;
@@ -443,7 +443,7 @@ const intervalId = setInterval(() => {
       counter = 0;
     }
     if (counter === 1 && counter2 < 20) {
-      const targetPosition = new THREE.Vector3(0, 10, getRandomInt(-50, -150));
+      const targetPosition = new THREE.Vector3(0, 15, getRandomInt(-50, -200));
       const targetInfo = {
         movable: true,
         movementLimits: {
@@ -478,7 +478,7 @@ const intervalId = setInterval(() => {
     loader.load(modelPath, (gltf) => {
       const model = gltf.scene;
       model.position.copy(position);
-      model.scale.set(0.05, 0.05, 0.05);
+      model.scale.set(0.025, 0.025, 0.025);
       this._scene.add(model);
   
       const movable = info.movable !== undefined ? info.movable : false;
@@ -529,8 +529,6 @@ const intervalId = setInterval(() => {
     });
   }
   
-
-
   _addCrosshair() {
     const loader = new THREE.TextureLoader();
     const crosshair = loader.load("assets/mira.png");
@@ -552,9 +550,6 @@ const intervalId = setInterval(() => {
     const grid = new THREE.GridHelper(10000, 1000);
     grid.receiveShadow = true;
     this._scene.add(grid);
-
-    // const axesHelper = new THREE.AxesHelper(15);
-    // this._scene.add(axesHelper);
   }
   _addBackground() {
     const loader = new THREE.CubeTextureLoader();
