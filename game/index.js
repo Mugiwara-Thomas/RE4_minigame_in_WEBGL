@@ -48,7 +48,7 @@ class InputController {
     this.previous = null;
     this.previousKeys = {};
 
-    this.shootingAudio = new Audio("assets/shooting.mp3");
+    this.shootingAudio = new Audio("../assets/shooting.mp3");
     this.shootingAudio.volume = 0.25;
 
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
@@ -114,7 +114,7 @@ class InputController {
     if (_APP) {
       const loader = new GLTFLoader();
       // Carregamento do modelo GLTF
-      loader.load("assets/low_poly_bullet/bala.glb", (gltf) => {
+      loader.load("../assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
         spawnedObject.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -220,7 +220,7 @@ class FirstPersonCamera {
     this._altura = 15;
     this._object = object;
 
-    this.walkingAudio = new Audio("assets/walking.mp3");
+    this.walkingAudio = new Audio("../assets/walking.mp3");
     this.walkingAudio.volume = 1;
   }
 
@@ -411,7 +411,7 @@ class World {
     let loader = new GLTFLoader();
     this._cenario;
 
-    loader.load("assets/cenario.glb", (gltf) => {
+    loader.load("../cenario.glb", (gltf) => {
       this._cenario = gltf.scene;
       this._cenario.scale.set(10, 10, 10);
        this._cenario.position.y += 1;
@@ -452,14 +452,14 @@ const intervalId = setInterval(() => {
         },
         axis: 'x'
       };  
-      const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
+      const newTarget = this._createTarget(targetPosition, "../assets/target/scene.gltf", targetInfo);
       targets.push(newTarget);
       counter = 0;
       counter2++;
     }
 }, 1000);
     
-    loader.load("assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
+    loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
       this._scene.add(this._object);
@@ -529,9 +529,11 @@ const intervalId = setInterval(() => {
     });
   }
   
+
+
   _addCrosshair() {
     const loader = new THREE.TextureLoader();
-    const crosshair = loader.load("assets/mira.png");
+    const crosshair = loader.load("../assets/mira.png");
     this._crosshairSprite = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: crosshair,

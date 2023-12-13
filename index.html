@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Simple 3D World</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./game/base.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #overlay {
+            position: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgb(0, 0, 0);
+            z-index: 9999;
+        }
+
+        #pontos-text {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 56px;
+            z-index: 9999;
+        }
+
+        #controles-text {
+            position: fixed;
+            top: 100px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+            z-index: 9999;
+        }
+
+        #loading-text {
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="pontos-text">Pontos:</div>
+
+    <div id="controles-text">W A S D: Movimento<br>
+        Botão Esquerdo do Mouse: Atirar<br>
+        M: Silenciar Musica<br>
+        C: Ocultar Controles<br>
+        R: Reiniciar
+    </div>
+
+    <div id="overlay">
+        <div id="loading-text">Carregando...</div>
+    </div>
+
+    <audio autoplay loop src="./assets/ost.mp3" id="ost"></audio>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "./game/three.module.js",
+                "three/addons/": "./game/jsm/"
+            }
+        }
+    </script>
+    <script>
+        var ost = document.getElementById("ost");
+        var defaultVolume = 0.35;
+        var isControllerHidden = false;
+        ost.volume = defaultVolume;
+    
+        var isMuted = false;
+    
+        document.addEventListener("keydown", function (event) {
+            if (event.key.toLowerCase() === 'm') {
+                isMuted = !isMuted;
+                ost.volume = isMuted ? 0 : defaultVolume;
+            }
+    
+            if (event.key.toLowerCase() === 'c') {
+                isControllerHidden = !isControllerHidden;
+                var controlesText = document.getElementById('controles-text');
+                controlesText.style.display = isControllerHidden ? 'none' : 'block';
+            }
+    
+            if (event.key.toLowerCase() === 'r') {
+                location.reload();
+            }
+        });
+    
+        setTimeout(function () {
+            var overlay = document.getElementById('overlay');
+            overlay.style.display = 'none';
+        }, 5000);
+    </script>
+    <script src="./game/index.js" type="module"></script>
+</body>
+
+</html>
