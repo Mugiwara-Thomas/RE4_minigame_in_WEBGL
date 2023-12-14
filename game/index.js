@@ -4,15 +4,18 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 const squares = {};
 
-
 let pontos = 0;
 
 let counter2 = 0;
 
+let isTimeOver = false;
+
 function atualizarPontosDisplay() {
   var pontosTextElement = document.getElementById('pontos-text');
+  var parabensTextElement = document.getElementById('parabens-text')
   if (pontosTextElement) {
       pontosTextElement.innerText = 'Pontos: ' + pontos;
+      parabensTextElement.innerText = 'Parabéns, você fez ' + pontos + ' pontos! Aperte R para reiniciar.';
   }
 }
 
@@ -27,13 +30,13 @@ class InputController {
   _handleKeyDown = (e) => {
     if (!this.keyPressed[e.key.toLowerCase()]) {
       this.keyPressed[e.key.toLowerCase()] = new Date().getTime();
-      console.log(`Tecla pressionada: ${e.key.toLowerCase()}`);
+      //console.log(`Tecla pressionada: ${e.key.toLowerCase()}`);
     }
   };
 
   _handleKeyUp = (e) => {
     delete this.keyPressed[e.key.toLowerCase()];
-    console.log(`Tecla liberada: ${e.key.toLowerCase()}`);
+    //console.log(`Tecla liberada: ${e.key.toLowerCase()}`);
   };
 
   _Initialize() {
@@ -50,6 +53,9 @@ class InputController {
 
     this.shootingAudio = new Audio("assets/shooting.mp3");
     this.shootingAudio.volume = 0.25;
+
+    this.emptyShootingAudio = new Audio("assets/empty.mp3");
+    this.emptyShootingAudio.volume = 0.45;
 
     document.addEventListener("mousedown", (e) => this._OnMouseDown(e), false);
     document.addEventListener("mouseup", (e) => this._OnMouseUp(e), false);
@@ -68,7 +74,7 @@ class InputController {
 
         if (this.canShoot) {
           this.current.leftButton = true;
-          if (this.current.leftButton) {
+          if (this.current.leftButton && timerSeconds >= 0) {
             this.spawnObject();
             this.shootingAudio.currentTime = 0;
             this.shootingAudio.play();
@@ -76,6 +82,9 @@ class InputController {
             setTimeout(() => {
               this.canShoot = true; // Set back to true after the delay period
             }, 500); // 1.5 seconds delay
+          }else{
+              this.emptyShootingAudio.currentTime = 0;
+              this.emptyShootingAudio.play();
           }
         }
         break;
@@ -106,14 +115,11 @@ class InputController {
 
     this.current.mouseXDelta = this.current.mouseX - this.previous.mouseX;
     this.current.mouseYDelta = this.current.mouseY - this.previous.mouseY;
-    //this.current.mouseXDelta = e.movementX;
-    //this.current.mouseYDelta = e.movementY;
   }
 
   spawnObject() {
     if (_APP) {
       const loader = new GLTFLoader();
-      // Carregamento do modelo GLTF
       loader.load("assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
         spawnedObject.traverse((child) => {
@@ -161,7 +167,7 @@ class InputController {
             const rectangleBox = new THREE.Box3().setFromObject(rectangle.model);
         
             if (objectBox.intersectsBox(rectangleBox)) {
-              console.log("Colisão detectada!");
+              //console.log("Colisão detectada!");
               counter2--;
               pontos++;
               atualizarPontosDisplay();
@@ -172,24 +178,44 @@ class InputController {
         }
         
         animate();
+
         function animate() {
-          const moveSpeed = 20;
+          if (timerSeconds >= 0) {
+              const moveSpeed = 25;
 
-          spawnedObject.position.addScaledVector(shotDirection, moveSpeed);
+              spawnedObject.position.addScaledVector(shotDirection, moveSpeed);
 
-          const rotationMatrix = new THREE.Matrix4();
-          rotationMatrix.lookAt(
-            spawnedObject.position,
-            spawnedObject.position.clone().add(shotDirection),
-            new THREE.Vector3(0, 1, 0)
-          );
-          spawnedObject.rotation.setFromRotationMatrix(rotationMatrix);
+              const rotationMatrix = new THREE.Matrix4();
+              rotationMatrix.lookAt(
+                  spawnedObject.position,
+                  spawnedObject.position.clone().add(shotDirection),
+                  new THREE.Vector3(0, 1, 0)
+              );
+              spawnedObject.rotation.setFromRotationMatrix(rotationMatrix);
 
-          detectCollision(spawnedObject, squares);
+              detectCollision(spawnedObject, squares);
+          } else {
+              // Timer has reached 0, remove all targets
+              removeAllTargets();
+
+              timerText.textContent = 'Acabou o tempo!';
+              console.log(timerSeconds);
+          }
+
           requestAnimationFrame(animate);
         }
 
-        setTimeout(() => {
+        function removeAllTargets() {
+          Object.keys(squares).forEach((key) => {
+              const square = squares[key].model;
+              _APP._scene.remove(square);
+              _APP._scene.remove(spawnedObject);
+          });
+      
+          squares = {}; // Reset the squares object
+      }
+
+      setTimeout(() => {
           _APP._scene.remove(spawnedObject);
         }, 10000); // Remova o objeto após 5 segundos (ajuste conforme necessário)
       });
@@ -433,30 +459,30 @@ function getRandomInt(min, max) {
 let counter = 0;
 
 const intervalId = setInterval(() => {
-    counter++;
-    console.log(counter);
-    console.log(counter2);
-    if (counter2 > 20){
-      counter2 = 0;
-    }
-    if (counter > 1){
-      counter = 0;
-    }
-    if (counter === 1 && counter2 < 20) {
-      const targetPosition = new THREE.Vector3(0, 15, getRandomInt(-50, -200));
-      const targetInfo = {
-        movable: true,
-        movementLimits: {
-          left: -150,
-          right: 150
-        },
-        axis: 'x'
-      };  
-      const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
-      targets.push(newTarget);
-      counter = 0;
-      counter2++;
-    }
+  if (timerSeconds > 0) { // Check if the timer is greater than 0
+      counter++;
+      if (counter2 > 20){
+          counter2 = 0;
+      }
+      if (counter > 1){
+          counter = 0;
+      }
+      if (counter === 1 && counter2 < 20) {
+          const targetPosition = new THREE.Vector3(0, 15, getRandomInt(-50, -200));
+          const targetInfo = {
+              movable: true,
+              movementLimits: {
+                  left: -150,
+                  right: 150
+              },
+              axis: 'x'
+          };  
+          const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
+          targets.push(newTarget);
+          counter = 0;
+          counter2++;
+      }
+  }
 }, 1000);
     
     loader.load("assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
@@ -475,22 +501,22 @@ const intervalId = setInterval(() => {
   }
   _createTarget(position, modelPath, info) {
     const loader = new GLTFLoader();
-    loader.load(modelPath, (gltf) => {
-      const model = gltf.scene;
-      model.position.copy(position);
-      model.scale.set(0.025, 0.025, 0.025);
-      this._scene.add(model);
-  
-      const movable = info.movable !== undefined ? info.movable : false;
-      const movementLimits = info.movementLimits || { left: -Infinity, right: Infinity };
-      const axis = info.axis || 'x'; // Defina 'x' como padrão se nenhum eixo for fornecido
-  
-      squares[model.uuid] = {
-        model,
-        info: { ...info, movable, movementLimits, axis } // Armazene a informação do eixo
-      };
-    });
-  }
+      loader.load(modelPath, (gltf) => {
+        const model = gltf.scene;
+        model.position.copy(position);
+        model.scale.set(0.025, 0.025, 0.025);
+        this._scene.add(model);
+    
+        const movable = info.movable !== undefined ? info.movable : false;
+        const movementLimits = info.movementLimits || { left: -Infinity, right: Infinity };
+        const axis = info.axis || 'x'; // Defina 'x' como padrão se nenhum eixo for fornecido
+    
+        squares[model.uuid] = {
+          model,
+          info: { ...info, movable, movementLimits, axis } // Armazene a informação do eixo
+        };
+      });
+    }
   
 
   _moveTargets() {

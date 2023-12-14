@@ -32,6 +32,7 @@
             color: white;
             font-size: 56px;
             z-index: 9999;
+            text-shadow: 5px 5px 5px black;
         }
 
         #controles-text {
@@ -41,12 +42,55 @@
             color: white;
             font-size: 24px;
             z-index: 9999;
+            text-shadow: 5px 5px 5px black;
         }
 
         #loading-text {
             color: white;
             font-size: 24px;
+            text-shadow: 5px 5px 5px black;
         }
+
+        #header-text {
+            color: white;
+            position: fixed;
+            top: 250px;
+            font-size: 72px;
+            text-shadow: 5px 5px 5px black;
+        }
+
+        #description-text {
+            color: white;
+            position: fixed;
+            bottom: 150px;
+            font-size: 36px;
+            text-shadow: 5px 5px 5px black;
+        }
+
+        #timer-text {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 48px; /* Adjust the font size as needed */
+            z-index: 9999;
+            display: none; /* Initially set to display: none */
+            text-shadow: 2px 2px 2px black;
+        }
+
+        #parabens-text {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 36px; /* Adjust the font size as needed */
+            z-index: 9999;
+            display: none; /* Initially set to display: none */
+            text-shadow: 2px 2px 2px black;
+        }
+
     </style>
 </head>
 
@@ -61,10 +105,16 @@
     </div>
 
     <div id="overlay">
+        <div id="header-text">WebGL Shooting Range<br></div>
         <div id="loading-text">Carregando...</div>
+        <div id="description-text">Acerte o maior número de alvos em um minuto!<br></div>
     </div>
 
     <audio autoplay loop src="./assets/ost.mp3" id="ost"></audio>
+
+    <div id="timer-text">1:00</div>
+
+    <div id="parabens-text">vai toma no cu</div>
 
     <script type="importmap">
         {
@@ -75,6 +125,9 @@
         }
     </script>
     <script>
+        var timerText = document.getElementById('timer-text');
+        var parabensText = document.getElementById('parabens-text')
+        var timerSeconds = 60;
         var ost = document.getElementById("ost");
         var defaultVolume = 0.35;
         var isControllerHidden = false;
@@ -102,7 +155,28 @@
         setTimeout(function () {
             var overlay = document.getElementById('overlay');
             overlay.style.display = 'none';
-        }, 5000);
+            timerText.style.display = 'block'; // Show the timer
+            updateTimer();
+        }, 7000);
+
+        function updateTimer() {
+            var minutes = Math.floor(timerSeconds / 60);
+            var seconds = timerSeconds % 60;
+
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            timerText.textContent = minutes + ':' + seconds;
+
+            if (timerSeconds >= 0) {
+                timerSeconds--;
+                console.log(timerSeconds)
+                setTimeout(updateTimer, 1000);
+            } else {
+                timerText.textContent = 'Acabou o tempo!';
+                parabensText.style.display = 'block';
+                console.log(timerSeconds)
+            }
+        }
     </script>
     <script src="./game/index.js" type="module"></script>
 </body>
