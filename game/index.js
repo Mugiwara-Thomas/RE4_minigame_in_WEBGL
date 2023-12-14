@@ -51,7 +51,7 @@ class InputController {
     this.previous = null;
     this.previousKeys = {};
 
-    this.shootingAudio = new Audio("assets/shooting.mp3");
+    this.shootingAudio = new Audio("../assets/shooting.mp3");
     this.shootingAudio.volume = 0.25;
 
     this.emptyShootingAudio = new Audio("assets/empty.mp3");
@@ -120,7 +120,8 @@ class InputController {
   spawnObject() {
     if (_APP) {
       const loader = new GLTFLoader();
-      loader.load("assets/low_poly_bullet/bala.glb", (gltf) => {
+      // Carregamento do modelo GLTF
+      loader.load("../assets/low_poly_bullet/bala.glb", (gltf) => {
         const spawnedObject = gltf.scene;
         spawnedObject.traverse((child) => {
           if (child instanceof THREE.Mesh) {
@@ -246,7 +247,7 @@ class FirstPersonCamera {
     this._altura = 15;
     this._object = object;
 
-    this.walkingAudio = new Audio("assets/walking.mp3");
+    this.walkingAudio = new Audio("../assets/walking.mp3");
     this.walkingAudio.volume = 1;
   }
 
@@ -437,7 +438,7 @@ class World {
     let loader = new GLTFLoader();
     this._cenario;
 
-    loader.load("assets/cenario.glb", (gltf) => {
+    loader.load("../cenario.glb", (gltf) => {
       this._cenario = gltf.scene;
       this._cenario.scale.set(10, 10, 10);
        this._cenario.position.y += 1;
@@ -459,33 +460,33 @@ function getRandomInt(min, max) {
 let counter = 0;
 
 const intervalId = setInterval(() => {
-  if (timerSeconds > 0) { // Check if the timer is greater than 0
-      counter++;
-      if (counter2 > 20){
-          counter2 = 0;
-      }
-      if (counter > 1){
-          counter = 0;
-      }
-      if (counter === 1 && counter2 < 20) {
-          const targetPosition = new THREE.Vector3(0, 15, getRandomInt(-50, -200));
-          const targetInfo = {
-              movable: true,
-              movementLimits: {
-                  left: -150,
-                  right: 150
-              },
-              axis: 'x'
-          };  
-          const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
-          targets.push(newTarget);
-          counter = 0;
-          counter2++;
-      }
-  }
+    counter++;
+    console.log(counter);
+    console.log(counter2);
+    if (counter2 > 20){
+      counter2 = 0;
+    }
+    if (counter > 1){
+      counter = 0;
+    }
+    if (counter === 1 && counter2 < 20) {
+      const targetPosition = new THREE.Vector3(0, 15, getRandomInt(-50, -200));
+      const targetInfo = {
+        movable: true,
+        movementLimits: {
+          left: -150,
+          right: 150
+        },
+        axis: 'x'
+      };  
+      const newTarget = this._createTarget(targetPosition, "assets/target/scene.gltf", targetInfo);
+      targets.push(newTarget);
+      counter = 0;
+      counter2++;
+    }
 }, 1000);
     
-    loader.load("assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
+    loader.load("../assets/fps-shotgun-gltf/scene.gltf", (gltf) => {
       this._object = gltf.scene;
       this._object.scale.set(3, 3, 3);
       this._scene.add(this._object);
@@ -555,9 +556,11 @@ const intervalId = setInterval(() => {
     });
   }
   
+
+
   _addCrosshair() {
     const loader = new THREE.TextureLoader();
-    const crosshair = loader.load("assets/mira.png");
+    const crosshair = loader.load("../assets/mira.png");
     this._crosshairSprite = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: crosshair,
